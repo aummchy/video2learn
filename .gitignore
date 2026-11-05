@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+backend/venv/
+*.egg-info/
+
+# Runtime data
+data/
+*.log
+
+# Media / large binaries
+*.mp4
+*.h5p
+
+# Office lock files
+.~lock.*
+*.docx
+*.pdf
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

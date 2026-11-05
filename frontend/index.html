@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video2Learn</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Video2Learn</h1>
+    <p class="tagline">Transform educational videos into interactive learning content for Moodle</p>
+  </header>
+
+  <main>
+    <!-- STEP 1: UPLOAD -->
+    <section id="upload-panel" class="step">
+      <h2>1. Upload video</h2>
+      <form id="upload-form">
+        <label class="file-label">
+          <input type="file" id="video-file" accept=".mp4,video/mp4" required>
+          <span id="file-name">Choose an MP4 file…</span>
+        </label>
+        <input type="text" id="video-title" placeholder="Video title (e.g. Introduction to FastAPI)" required>
+        <div class="row">
+          <select id="video-language">
+            <option value="auto">Auto-detect language</option>
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="hi">Hindi</option>
+            <option value="ar">Arabic</option>
+            <option value="pt">Portuguese</option>
+          </select>
+          <button type="submit" id="upload-btn">Generate interactive video</button>
+        </div>
+      </form>
+      <div id="upload-error" class="status error hidden"></div>
+    </section>
+
+    <!-- STEP 2: PROGRESS -->
+    <section id="progress-panel" class="step hidden">
+      <h2>2. Processing</h2>
+      <ul id="stage-list">
+        <li data-stage="upload"><span class="dot"></span> Upload &amp; validation</li>
+        <li data-stage="transcribe"><span class="dot"></span> Extracting audio &amp; transcribing speech</li>
+        <li data-stage="generate"><span class="dot"></span> Generating questions with AI</li>
+        <li data-stage="ready"><span class="dot"></span> Ready to review</li>
+      </ul>
+      <div id="stage-detail" class="status">Starting…</div>
+      <div id="pipeline-error" class="status error hidden">
+        <span id="error-msg"></span>
+        <button id="retry-btn" class="secondary">Retry generation</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: EDITOR -->
+    <section id="editor-panel" class="step hidden">
+      <div class="editor-header">
+        <div>
+          <h2 id="editor-title">Interactive video</h2>
+          <p id="editor-meta" class="muted"></p>
+        </div>
+        <div class="actions">
+          <button id="regenerate-btn" class="secondary">Regenerate questions</button>
+          <a id="export-btn" class="button" href="#" download>Download .h5p</a>
+          <button id="start-over-btn" class="secondary">New video</button>
+        </div>
+      </div>
+
+      <div class="preview-wrap">
+        <video id="preview-video" controls preload="metadata"></video>
+        <div id="question-overlay" class="overlay hidden">
+          <div class="overlay-card">
+            <p id="ov-type" class="ov-type"></p>
+            <p id="ov-question" class="ov-question"></p>
+            <div id="ov-choices" class="ov-choices"></div>
+            <p id="ov-feedback" class="ov-feedback hidden"></p>
+            <button id="ov-continue" class="hidden">Continue</button>
+          </div>
+        </div>
+      </div>
+      <p class="muted small">Preview checks question timing locally — the downloaded <code>.h5p</code> is what Moodle plays.</p>
+
+      <details id="transcript-details">
+        <summary>Transcript (<span id="segment-count">0</span> segments)</summary>
+        <div id="transcript-list" class="transcript-list"></div>
+      </details>
+
+      <div class="q-header">
+        <h3>Questions (<span id="q-count">0</span>)</h3>
+        <button id="add-q-btn">+ Add question</button>
+      </div>
+      <table class="q-table">
+        <thead>
+          <tr><th>Time</th><th>Type</th><th>Question</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="questions-body"></tbody>
+      </table>
+      <div id="save-indicator" class="muted small"></div>
+    </section>
+  </main>
+
+  <!-- EDIT MODAL -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-card">
+      <h3 id="modal-title">Edit question</h3>
+      <label>Type
+        <select id="q-type">
+          <option value="mc">Multiple choice</option>
+          <option value="tf">True / False</option>
+        </select>
+      </label>
+      <label>Question
+        <textarea id="q-question" rows="2" required></textarea>
+      </label>
+      <div id="mc-fields">
+        <label>Choices <span class="muted small">(mark the radio of the correct answer)</span></label>
+        <div id="choices-list"></div>
+        <button type="button" id="add-choice-btn" class="secondary small-btn">+ Add choice</button>
+      </div>
+      <div id="tf-fields" class="hidden">
+        <label>Correct answer</label>
+        <div class="tf-correct">
+          <label><input type="radio" name="tf-correct" value="0" checked> True</label>
+          <label><input type="radio" name="tf-correct" value="1"> False</label>
+        </div>
+      </div>
+      <label>Explanation (shown after answering)
+        <textarea id="q-explanation" rows="2"></textarea>
+      </label>
+      <div class="row">
+        <label>Time (seconds)
+          <input type="number" id="q-time" min="0" step="0.5" required>
+        </label>
+        <label>Visible for (seconds)
+          <input type="number" id="q-duration" min="5" step="1" value="15">
+        </label>
+        <div class="time-preview" id="time-preview"></div>
+      </div>
+      <div id="modal-error" class="status error hidden"></div>
+      <div class="modal-actions">
+        <button type="button" id="modal-cancel" class="secondary">Cancel</button>
+        <button type="button" id="modal-save">Save question</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
